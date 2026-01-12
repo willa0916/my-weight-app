@@ -138,37 +138,64 @@
         .catch(e => { console.error(e); toggleLoading(false); });
     }
 
-    function uploadRecord() {
+function uploadRecord() {
+        // --- 1. 取得基本數值 ---
         const date = document.getElementById('inputDate').value;
         const weight = parseFloat(document.getElementById('inputWeight').value);
         const height = parseFloat(document.getElementById('setHeight').value);
         const activity = parseFloat(document.getElementById('inputActivity').value);
-        
-        if (!date || !weight) { alert("日期與體重為必填！"); return; }
-        if (!height) { alert("請先設定身高！"); return; }
-
-        const heightM = height / 100;
-        const bmi = (weight / (heightM ** 2)).toFixed(1);
-        
         const gender = document.getElementById('inputGender').value;
+        const userAge = 35; // 🎂 預設年齡 (根據您的資料設定)，可自行修改
+        
+        // 基本防呆
+        if (!date || !weight) { alert("日期與體重為必填！"); return; }
+        if (!height) { alert("請先在上方設定區輸入身高！"); return; }
+
+        // --- 2. 取得圍度數據 (若有的話) ---
         const neck = parseFloat(document.getElementById('inputNeck').value);
         const waist = parseFloat(document.getElementById('inputWaist').value);
         const hip = parseFloat(document.getElementById('inputHip').value);
         
+        const heightM = height / 100;
+        const bmi = (weight / (heightM ** 2)).toFixed(1);
+        
         let bodyFat = '', bmr = '', tdee = '', ffmi = '';
-        let hasData = (gender === 'male' && neck && waist) || (gender === 'female' && neck && waist && hip);
+        
+        // 判斷是否有足夠數據算體脂 (男性需頸腰，女性需頸腰臀)
+        let hasBodyFatData = (gender === 'male' && neck && waist) || (gender === 'female' && neck && waist && hip);
 
-        if (hasData) {
-            if (gender === 'male') bodyFat = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck) + 0.1554 * Math.log10(height)) - 450;
-            else bodyFat = 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck) + 0.22100 * Math.log10(height)) - 450;
-            
+        // --- 3. 核心計算邏輯 (雙軌制) ---
+        if (hasBodyFatData) {
+            // 【方案 A】資料齊全：使用最準確的 Katch-McArdle 公式 (基於瘦體重)
+            if (gender === 'male') {
+                bodyFat = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck) + 0.1554 * Math.log10(height)) - 450;
+            } else {
+                bodyFat = 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck) + 0.22100 * Math.log10(height)) - 450;
+            }
             bodyFat = parseFloat(bodyFat.toFixed(1));
-            const lbm = weight * (1 - (bodyFat / 100));
+            
+            const lbm = weight * (1 - (bodyFat / 100)); // 瘦體重
             bmr = Math.round(370 + (21.6 * lbm));
-            tdee = Math.round(bmr * activity);
             ffmi = (lbm / (heightM ** 2)).toFixed(1);
+
+        } else {
+            // 【方案 B】資料不足：使用 Mifflin-St Jeor 公式 (基於體重身高年齡)
+            // 這就是讓您沒填圍度也能看到代謝數據的關鍵！
+            if (gender === 'male') {
+                bmr = (10 * weight) + (6.25 * height) - (5 * userAge) + 5;
+            } else {
+                bmr = (10 * weight) + (6.25 * height) - (5 * userAge) - 161;
+            }
+            bmr = Math.round(bmr);
+            // 沒圍度算不出 FFMI，保持空白
         }
 
+        // 最後算出 TDEE (BMR * 活動係數)
+        if (bmr) {
+            tdee = Math.round(bmr * activity);
+        }
+
+        // --- 4. 打包並上傳 ---
         const payload = { date, weight, bmi, bodyFat, ffmi, bmr, tdee };
         sendToGoogle(payload);
     }
@@ -257,3 +284,4 @@
 
 </body>
 </html>
+
