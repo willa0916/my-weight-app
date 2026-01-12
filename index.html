@@ -14,118 +14,69 @@
         .spinner-border { width: 3rem; height: 3rem; }
         .optional-section { display: none; background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 10px; }
         .btn-toggle-opt { font-size: 0.9rem; color: #6c757d; text-decoration: none; cursor: pointer; }
-        .btn-toggle-opt:hover { color: #0d6efd; }
+        .btn-del { border: 1px solid #dc3545; color: #dc3545; background: none; border-radius: 5px; padding: 2px 8px; font-size: 0.8rem; transition: 0.2s; }
+        .btn-del:hover { background: #dc3545; color: white; }
     </style>
 </head>
 <body>
 
 <div id="loading" class="loading-overlay">
     <div class="spinner-border text-primary" role="status"></div>
-    <h4 class="mt-3 text-primary fw-bold">雲端同步中...</h4>
-    <p class="text-muted">正在與 Google 資料庫連線</p>
+    <h4 class="mt-3 text-primary fw-bold">處理中...</h4>
+    <p class="text-muted">正在與雲端資料庫同步</p>
 </div>
 
 <div class="container py-4">
-    <h2 class="text-center mb-4 fw-bold text-primary">☁️ 雲端體重計錄器</h2>
+    <h2 class="text-center mb-4 fw-bold text-primary">☁️雲端體重計錄器 v3.2</h2>
 
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <span>⚙️ 個人設定</span>
-            <button onclick="saveSettings()" class="btn btn-sm btn-outline-primary">儲存設定</button>
+            <span>⚙️ 設定</span>
+            <button onclick="saveSettings()" class="btn btn-sm btn-outline-primary">儲存</button>
         </div>
         <div class="card-body">
             <div class="row g-2">
-                <div class="col-4">
-                    <label class="small text-muted">身高(cm)</label>
-                    <input type="number" id="setHeight" class="form-control" value="160">
-                </div>
-                <div class="col-4">
-                    <label class="small text-muted">目標體重</label>
-                    <input type="number" id="setTargetW" class="form-control" placeholder="kg">
-                </div>
-                <div class="col-4">
-                    <label class="small text-muted">目標體脂</label>
-                    <input type="number" id="setTargetF" class="form-control" placeholder="%">
-                </div>
+                <div class="col-4"><label class="small text-muted">身高(cm)</label><input type="number" id="setHeight" class="form-control" value="160"></div>
+                <div class="col-4"><label class="small text-muted">目標體重</label><input type="number" id="setTargetW" class="form-control"></div>
+                <div class="col-4"><label class="small text-muted">目標體脂</label><input type="number" id="setTargetF" class="form-control"></div>
             </div>
         </div>
     </div>
 
     <div class="card">
-        <div class="card-header">➕ 新增今日紀錄</div>
+        <div class="card-header">➕ 新增紀錄</div>
         <div class="card-body">
             <div class="row g-3">
-                <div class="col-6">
-                    <label class="form-label text-danger fw-bold">日期</label>
-                    <input type="date" id="inputDate" class="form-control">
-                </div>
-                <div class="col-6">
-                    <label class="form-label text-danger fw-bold">體重 (kg)</label>
-                    <input type="number" id="inputWeight" class="form-control" step="0.1" placeholder="輸入體重">
-                </div>
-                
-                <div class="col-6">
-                    <label class="form-label">活動量 <small>(影響TDEE)</small></label>
-                    <select id="inputActivity" class="form-select">
-                        <option value="1.2">久坐 (辦公室/沒運動)</option>
-                        <option value="1.375">輕度 (每週1-3天)</option>
-                        <option value="1.55">中度 (每週3-5天)</option>
-                        <option value="1.725">高度 (每週6-7天)</option>
-                    </select>
-                </div>
-                <div class="col-6">
-                    <label class="form-label">性別</label>
-                    <select id="inputGender" class="form-select" onchange="toggleHip()">
-                        <option value="female">女性</option>
-                        <option value="male">男性</option>
-                    </select>
-                </div>
+                <div class="col-6"><label class="form-label text-danger fw-bold">日期</label><input type="date" id="inputDate" class="form-control"></div>
+                <div class="col-6"><label class="form-label text-danger fw-bold">體重</label><input type="number" id="inputWeight" class="form-control" step="0.1"></div>
+                <div class="col-6"><label class="form-label">活動量</label><select id="inputActivity" class="form-select"><option value="1.2">久坐</option><option value="1.375">輕度</option><option value="1.55">中度</option><option value="1.725">高度</option></select></div>
+                <div class="col-6"><label class="form-label">性別</label><select id="inputGender" class="form-select" onchange="toggleHip()"><option value="female">女性</option><option value="male">男性</option></select></div>
 
-                <div class="col-12 text-center">
-                    <a class="btn-toggle-opt" onclick="toggleOptional()">▼ 點此填寫圍度 (計算體脂率/BMR/TDEE)</a>
-                </div>
-                
+                <div class="col-12 text-center"><a class="btn-toggle-opt" onclick="toggleOptional()">▼ 填寫圍度 (選填)</a></div>
                 <div id="optionalSection" class="optional-section">
                     <div class="row g-2">
-                        <div class="col-12"><small class="text-primary">填寫下方數據，系統將自動計算您的體脂率與代謝率</small></div>
-                        <div class="col-4">
-                            <label class="small">頸圍(cm)</label>
-                            <input type="number" id="inputNeck" class="form-control">
-                        </div>
-                        <div class="col-4">
-                            <label class="small">腰圍(cm)</label>
-                            <input type="number" id="inputWaist" class="form-control">
-                        </div>
-                        <div class="col-4" id="divHip">
-                            <label class="small">臀圍(cm)</label>
-                            <input type="number" id="inputHip" class="form-control">
-                        </div>
+                        <div class="col-4"><label class="small">頸圍</label><input type="number" id="inputNeck" class="form-control"></div>
+                        <div class="col-4"><label class="small">腰圍</label><input type="number" id="inputWaist" class="form-control"></div>
+                        <div class="col-4" id="divHip"><label class="small">臀圍</label><input type="number" id="inputHip" class="form-control"></div>
                     </div>
                 </div>
 
-                <div class="col-12 text-end mt-3">
-                    <button onclick="uploadRecord()" class="btn btn-primary px-5 fw-bold w-100">上傳紀錄</button>
-                </div>
+                <div class="col-12 text-end mt-3"><button onclick="uploadRecord()" class="btn btn-primary px-5 w-100 fw-bold">上傳紀錄</button></div>
             </div>
         </div>
     </div>
 
     <div class="card">
-        <div class="card-header d-flex justify-content-between">
-            <span>📈 趨勢圖 (虛線為目標)</span>
-            <button onclick="fetchData()" class="btn btn-sm btn-outline-secondary">🔄 刷新</button>
-        </div>
-        <div class="card-body">
-            <canvas id="trendChart" height="200"></canvas>
-        </div>
+        <div class="card-header d-flex justify-content-between"><span>📈 趨勢</span><button onclick="fetchData()" class="btn btn-sm btn-outline-secondary">🔄</button></div>
+        <div class="card-body"><canvas id="trendChart" height="200"></canvas></div>
     </div>
 
     <div class="card">
-        <div class="card-header">📋 詳細數據</div>
+        <div class="card-header">📋 數據列表</div>
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-striped text-center mb-0" style="font-size: 0.9rem;">
-                    <thead class="table-dark"><tr><th>日期</th><th>體重/體脂</th><th>BMI</th><th>代謝(TDEE)</th></tr></thead>
+                <table class="table table-striped text-center align-middle mb-0" style="font-size: 0.9rem;">
+                    <thead class="table-dark"><tr><th>日期</th><th>體重/體脂</th><th>代謝/BMI</th><th>操作</th></tr></thead>
                     <tbody id="recordList"></tbody>
                 </table>
             </div>
@@ -142,18 +93,13 @@
     let records = [];
     let myChart = null;
     
-    // 初始化
     window.onload = function() {
         document.getElementById('inputDate').valueAsDate = new Date();
         loadSettings();
-        if(GOOGLE_SCRIPT_URL.includes("您的網址")) {
-            alert("請記得修改程式碼中的 Google 網址！");
-        } else {
-            fetchData();
-        }
+        if(GOOGLE_SCRIPT_URL.includes("您的網址")) alert("請修改程式碼中的 Google 網址！");
+        else fetchData();
     };
 
-    // 介面互動功能
     function toggleOptional() {
         const sec = document.getElementById('optionalSection');
         sec.style.display = (sec.style.display === 'block') ? 'none' : 'block';
@@ -162,20 +108,13 @@
         const isMale = document.getElementById('inputGender').value === 'male';
         document.getElementById('divHip').style.display = isMale ? 'none' : 'block';
     }
-    function toggleLoading(show) {
-        document.getElementById('loading').style.visibility = show ? 'visible' : 'hidden';
-    }
+    function toggleLoading(show) { document.getElementById('loading').style.visibility = show ? 'visible' : 'hidden'; }
 
-    // 本地設定存取 (Local Storage)
     function saveSettings() {
-        const s = {
-            h: document.getElementById('setHeight').value,
-            tw: document.getElementById('setTargetW').value,
-            tf: document.getElementById('setTargetF').value
-        };
+        const s = { h: document.getElementById('setHeight').value, tw: document.getElementById('setTargetW').value, tf: document.getElementById('setTargetF').value };
         localStorage.setItem('myBodySettings', JSON.stringify(s));
-        alert("設定已儲存 (將用於下次開啟與圖表)");
-        renderAll(); // 重繪圖表以更新目標線
+        alert("設定已儲存");
+        renderAll();
     }
     function loadSettings() {
         const s = JSON.parse(localStorage.getItem('myBodySettings'));
@@ -186,77 +125,65 @@
         }
     }
 
-    // 資料處理邏輯
     function fetchData() {
         toggleLoading(true);
         fetch(GOOGLE_SCRIPT_URL)
         .then(res => res.json())
         .then(data => {
             records = data; 
-            records.sort((a, b) => new Date(a.date) - new Date(b.date)); // 確保日期排序
+            records.sort((a, b) => new Date(a.date) - new Date(b.date));
             renderAll();
             toggleLoading(false);
         })
-        .catch(e => {
-            console.error(e);
-            toggleLoading(false);
-        });
+        .catch(e => { console.error(e); toggleLoading(false); });
     }
 
     function uploadRecord() {
         const date = document.getElementById('inputDate').value;
         const weight = parseFloat(document.getElementById('inputWeight').value);
-        const height = parseFloat(document.getElementById('setHeight').value); // 讀取設定區的身高
+        const height = parseFloat(document.getElementById('setHeight').value);
         const activity = parseFloat(document.getElementById('inputActivity').value);
         
         if (!date || !weight) { alert("日期與體重為必填！"); return; }
-        if (!height) { alert("請先在上方設定區輸入身高！"); return; }
+        if (!height) { alert("請先設定身高！"); return; }
 
-        // 計算邏輯
         const heightM = height / 100;
         const bmi = (weight / (heightM ** 2)).toFixed(1);
         
-        // 體脂與代謝計算
         const gender = document.getElementById('inputGender').value;
         const neck = parseFloat(document.getElementById('inputNeck').value);
         const waist = parseFloat(document.getElementById('inputWaist').value);
         const hip = parseFloat(document.getElementById('inputHip').value);
         
         let bodyFat = '', bmr = '', tdee = '', ffmi = '';
-        
-        // 判斷是否資料充足
-        let hasData = false;
-        if (gender === 'male' && neck && waist) hasData = true;
-        if (gender === 'female' && neck && waist && hip) hasData = true;
+        let hasData = (gender === 'male' && neck && waist) || (gender === 'female' && neck && waist && hip);
 
         if (hasData) {
-            // 1. 體脂率 (海軍公式)
-            if (gender === 'male') {
-                bodyFat = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck) + 0.1554 * Math.log10(height)) - 450;
-            } else {
-                bodyFat = 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck) + 0.22100 * Math.log10(height)) - 450;
-            }
+            if (gender === 'male') bodyFat = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck) + 0.1554 * Math.log10(height)) - 450;
+            else bodyFat = 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck) + 0.22100 * Math.log10(height)) - 450;
+            
             bodyFat = parseFloat(bodyFat.toFixed(1));
-
-            // 2. 代謝率 (Katch-McArdle 公式 - 較準確，因基於瘦體重)
-            const lbm = weight * (1 - (bodyFat / 100)); // 瘦體重
+            const lbm = weight * (1 - (bodyFat / 100));
             bmr = Math.round(370 + (21.6 * lbm));
-            tdee = Math.round(bmr * activity); // 這裡加入了活動量係數
+            tdee = Math.round(bmr * activity);
             ffmi = (lbm / (heightM ** 2)).toFixed(1);
         }
 
-        const payload = {
-            date: date,
-            weight: weight,
-            bmi: bmi,
-            bodyFat: bodyFat,
-            ffmi: ffmi,
-            bmr: bmr,
-            tdee: tdee
-        };
+        const payload = { date, weight, bmi, bodyFat, ffmi, bmr, tdee };
+        sendToGoogle(payload);
+    }
 
+    // 🆕 新增：刪除功能
+    function deleteRecord(date) {
+        if(confirm(`確定要刪除 ${date} 的紀錄嗎？`)) {
+            // 傳送 action: 'delete' 指令給後端
+            const payload = { action: 'delete', date: date };
+            sendToGoogle(payload);
+        }
+    }
+
+    function sendToGoogle(payload) {
         toggleLoading(true);
-
         fetch(GOOGLE_SCRIPT_URL, {
             method: 'POST',
             mode: 'no-cors',
@@ -264,58 +191,47 @@
             body: JSON.stringify(payload)
         }).then(() => {
             setTimeout(() => {
-                alert("上傳成功！");
+                alert("操作成功！");
                 fetchData();
-                // 清空變動欄位
                 document.getElementById('inputWeight').value = '';
             }, 1000); 
-        }).catch(e => {
-            alert("上傳錯誤：" + e);
-            toggleLoading(false);
-        });
+        }).catch(e => { alert("連線錯誤：" + e); toggleLoading(false); });
     }
 
     function renderAll() {
         const tbody = document.getElementById('recordList');
         tbody.innerHTML = '';
-        
-        const labels = [], wData = [], fData = [];
-        
-        // 讀取目標設定
+        const labels = [], wData = [], fData = [], tWData = [], tFData = [];
         const targetW = document.getElementById('setTargetW').value;
         const targetF = document.getElementById('setTargetF').value;
-        const tWData = [], tFData = [];
 
         records.forEach(r => {
-            // 列表顯示
-            const d = r.date.substring(5, 10); // 只顯示 月-日
+            const d = r.date.substring(5, 10);
             const fatShow = r.bodyFat ? `<br><span class="small text-success">${r.bodyFat}%</span>` : '';
             const tdeeShow = r.tdee ? `<span class="fw-bold text-primary">${r.tdee}</span>` : '-';
-            const bmrShow = r.bmr ? `<br><span class="small text-muted">BMR:${r.bmr}</span>` : '';
+            const bmiShow = `<br><span class="small text-muted">BMI:${r.bmi}</span>`;
 
+            // 列表每一行加入刪除按鈕
             const row = `<tr>
                 <td>${d}</td>
                 <td><b>${r.weight}</b>${fatShow}</td>
-                <td>${r.bmi}</td>
-                <td>${tdeeShow}${bmrShow}</td>
+                <td>${tdeeShow}${bmiShow}</td>
+                <td><button onclick="deleteRecord('${r.date}')" class="btn-del">刪除</button></td>
             </tr>`;
-            tbody.innerHTML = row + tbody.innerHTML; // 新的在上面
+            tbody.innerHTML = row + tbody.innerHTML;
 
-            // 圖表數據
             labels.push(d);
             wData.push(r.weight);
             fData.push(r.bodyFat || null);
             tWData.push(targetW || null);
             tFData.push(targetF || null);
         });
-
         drawChart(labels, wData, fData, tWData, tFData);
     }
 
     function drawChart(labels, wData, fData, tWData, tFData) {
         const ctx = document.getElementById('trendChart').getContext('2d');
         if (myChart) myChart.destroy();
-        
         myChart = new Chart(ctx, {
             type: 'line',
             data: {
@@ -323,7 +239,6 @@
                 datasets: [
                     { label: '體重', data: wData, borderColor: '#0d6efd', yAxisID: 'y', tension: 0.3 },
                     { label: '體脂', data: fData, borderColor: '#198754', yAxisID: 'y1', tension: 0.3, spanGaps: false },
-                    // 目標線
                     { label: '目標體重', data: tWData, borderColor: '#0d6efd', borderDash: [5,5], pointRadius: 0, borderWidth: 1, yAxisID: 'y', fill: false },
                     { label: '目標體脂', data: tFData, borderColor: '#198754', borderDash: [5,5], pointRadius: 0, borderWidth: 1, yAxisID: 'y1', fill: false }
                 ]
@@ -332,8 +247,8 @@
                 responsive: true,
                 interaction: { mode: 'index', intersect: false },
                 scales: {
-                    y: { type: 'linear', display: true, position: 'left', title: {display:true, text:'體重'} },
-                    y1: { type: 'linear', display: true, position: 'right', grid: {drawOnChartArea: false}, title: {display:true, text:'體脂%'} }
+                    y: { type: 'linear', display: true, position: 'left' },
+                    y1: { type: 'linear', display: true, position: 'right', grid: {drawOnChartArea: false} }
                 }
             }
         });
